@@ -1,0 +1,19 @@
+-- 🔥 Borra todo el contenido de las tablas principales y relacionadas
+-- ⚠️ Asegurate de que no haya datos que necesites antes de ejecutar.
+
+TRUNCATE TABLE
+    consultas,
+    medicos,
+    users,
+    recetas,
+    notas_medicas,
+    valoraciones,
+    mensajes_chat,
+    pagos_consulta,
+    receta_items,
+    ubicaciones_medico,
+    saldo_medico,
+    liquidaciones_medico,
+    direcciones,
+    auth_providers
+RESTART IDENTITY CASCADE;

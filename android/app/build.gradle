@@ -1,0 +1,66 @@
+// ==============================================
+// ✅ build.gradle - DocYa Pro (Flutter 3.24.x compatible)
+// ==============================================
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty("flutter.sdk")
+assert flutterRoot != null : "⚠️ Flutter SDK not found in local.properties"
+
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.google.gms.google-services"
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    namespace "com.docya.pro"           // 🆕 nombre de paquete correcto
+    compileSdkVersion 35                // 🆙 Requerido por plugins modernos
+
+    defaultConfig {
+        applicationId "com.docya.pro"   // 🆕 nombre único de la app profesional
+        minSdkVersion 23
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+    }
+
+    compileOptions {
+        coreLibraryDesugaringEnabled true      // ✅ requerido por flutter_local_notifications
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    // ✅ nombre del APK personalizado
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFileName = "DocYaPro-${variant.name}.apk"
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.25"
+    implementation "androidx.multidex:multidex:2.0.1"
+
+    // ✅ librería necesaria para desugaring (Java 8+ en APIs bajas)
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.3"
+}

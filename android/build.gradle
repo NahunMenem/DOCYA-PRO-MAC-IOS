@@ -1,0 +1,38 @@
+// ==============================================
+// ✅ build.gradle (nivel raíz) - DocYa Paciente
+// Flutter 3.22–3.27 compatible / Gradle 8.6+ / Kotlin 1.9.23 / Java 17
+// ==============================================
+
+buildscript {
+    ext.kotlin_version = "1.9.23"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.6.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.gms:google-services:4.4.2"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// ✅ Organización limpia del directorio build
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+// ⚠️ Esto (evaluationDependsOn) ya no se usa desde Gradle 8 → lo quitamos
+// subprojects { project.evaluationDependsOn(":app") }
+
+// ✅ Tarea de limpieza
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

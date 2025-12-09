@@ -1,0 +1,220 @@
+PODS:
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+  - background_location (0.0.1):
+    - Flutter
+  - device_info_plus (0.0.1):
+    - Flutter
+  - Firebase/CoreOnly (12.2.0):
+    - FirebaseCore (~> 12.2.0)
+  - Firebase/Messaging (12.2.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 12.2.0)
+  - firebase_core (4.1.1):
+    - Firebase/CoreOnly (= 12.2.0)
+    - Flutter
+  - firebase_messaging (16.0.2):
+    - Firebase/Messaging (= 12.2.0)
+    - firebase_core
+    - Flutter
+  - FirebaseCore (12.2.0):
+    - FirebaseCoreInternal (~> 12.2.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreInternal (12.2.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.2.0):
+    - FirebaseCore (~> 12.2.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.2.0):
+    - FirebaseCore (~> 12.2.0)
+    - FirebaseInstallations (~> 12.2.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
+  - Flutter (1.0.0)
+  - flutter_background_service_ios (0.0.3):
+    - Flutter
+  - flutter_local_notifications (0.0.1):
+    - Flutter
+  - flutter_pdfview (1.0.2):
+    - Flutter
+  - geolocator_apple (1.2.0):
+    - Flutter
+  - Google-Maps-iOS-Utils (6.1.0):
+    - GoogleMaps (~> 9.0)
+  - google_maps_flutter_ios (0.0.1):
+    - Flutter
+    - Google-Maps-iOS-Utils (< 7.0, >= 5.0)
+    - GoogleMaps (< 10.0, >= 8.4)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleMaps (9.4.0):
+    - GoogleMaps/Maps (= 9.4.0)
+  - GoogleMaps/Maps (9.4.0)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.1.0):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.1.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.0)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/Reachability (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
+  - open_file_ios (0.0.1):
+    - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - PromisesObjC (2.4.0)
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_ios (0.0.1):
+    - Flutter
+  - vibration (1.7.5):
+    - Flutter
+
+DEPENDENCIES:
+  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
+  - background_location (from `.symlinks/plugins/background_location/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
+  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_background_service_ios (from `.symlinks/plugins/flutter_background_service_ios/ios`)
+  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - flutter_pdfview (from `.symlinks/plugins/flutter_pdfview/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
+  - GoogleMaps (~> 9.4.0)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - vibration (from `.symlinks/plugins/vibration/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Firebase
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - Google-Maps-iOS-Utils
+    - GoogleDataTransport
+    - GoogleMaps
+    - GoogleUtilities
+    - nanopb
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  audioplayers_darwin:
+    :path: ".symlinks/plugins/audioplayers_darwin/ios"
+  background_location:
+    :path: ".symlinks/plugins/background_location/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  firebase_core:
+    :path: ".symlinks/plugins/firebase_core/ios"
+  firebase_messaging:
+    :path: ".symlinks/plugins/firebase_messaging/ios"
+  Flutter:
+    :path: Flutter
+  flutter_background_service_ios:
+    :path: ".symlinks/plugins/flutter_background_service_ios/ios"
+  flutter_local_notifications:
+    :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  flutter_pdfview:
+    :path: ".symlinks/plugins/flutter_pdfview/ios"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/ios"
+  google_maps_flutter_ios:
+    :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  open_file_ios:
+    :path: ".symlinks/plugins/open_file_ios/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+  vibration:
+    :path: ".symlinks/plugins/vibration/ios"
+
+SPEC CHECKSUMS:
+  audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
+  background_location: d888b93eca7cff45c2c084b7ecea2eec70b6e490
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
+  Firebase: 26f6f8d460603af3df970ad505b16b15f5e2e9a1
+  firebase_core: dfc4bd142bee4bc53a5d482397ca322c2dd3165d
+  firebase_messaging: 38c66c1184695b0c87abe51d40fc590718abed1a
+  FirebaseCore: 311c48a147ad4a0ab7febbaed89e8025c67510cd
+  FirebaseCoreInternal: 56ea29f3dad2894f81b060f706f9d53509b6ed3b
+  FirebaseInstallations: 3e884b01feabdf67582a80f3250425a00979b4ed
+  FirebaseMessaging: 43ec73bbfedd0c385a849bb91593ab4ad4b9e48e
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_background_service_ios: 00d31bdff7b4bfe06d32375df358abe0329cf87e
+  flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
+  flutter_pdfview: 32bf27bda6fd85b9dd2c09628a824df5081246cf
+  geolocator_apple: 1560c3c875af2a412242c7a923e15d0d401966ff
+  Google-Maps-iOS-Utils: 0a484b05ed21d88c9f9ebbacb007956edd508a96
+  google_maps_flutter_ios: 0291eb2aa252298a769b04d075e4a9d747ff7264
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleMaps: 0608099d4870cac8754bdba9b6953db543432438
+  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
+  image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  open_file_ios: 5ff7526df64e4394b4fe207636b67a95e83078bb
+  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
+  vibration: 8e2f50fc35bb736f9eecb7dd9f7047fbb6a6e888
+
+PODFILE CHECKSUM: 289341a6818da99f41adb3ba9b87645b89921dfc
+
+COCOAPODS: 1.16.2

@@ -1,0 +1,3 @@
+SELECT id, tipo, disponible, latitud, longitud 
+FROM medicos 
+WHERE id = 40;
