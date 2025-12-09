@@ -10,8 +10,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'editar_alias_screen.dart';
 import 'dashboard_screen.dart';
-import 'login_screen_pro.dart' hide DocYaSnackbar, SnackType; // 👈 oculta duplicados
-import '../widgets/docya_snackbar.dart'; // 👈 snackbar global unificado
+import 'login_screen_pro.dart' hide DocYaSnackbar, SnackType; 
+import '../widgets/docya_snackbar.dart';
 
 class PerfilScreen extends StatefulWidget {
   final String nombreUsuario;
@@ -79,6 +79,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  // 🔥 CAMBIAR FOTO
   Future<void> _cambiarFoto() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -114,6 +115,104 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  // 🔥 ELIMINAR CUENTA DEL MÉDICO (POP-UP CONFIRMACIÓN)
+  void _confirmarEliminacionMedico(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          backgroundColor: Colors.black.withOpacity(0.85),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.white24),
+          ),
+          title: const Text(
+            "Eliminar cuenta",
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Esta acción eliminará tu cuenta de médico de forma permanente. "
+            "Tus consultas históricas se conservarán para proteger la historia clínica.",
+            style: TextStyle(color: Colors.white70, fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Cancelar",
+                  style: TextStyle(color: Colors.white54)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text(
+                "Eliminar",
+                style: TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                _eliminarCuentaMedico();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 🔥 LLAMADA AL BACKEND PARA ELIMINACIÓN DEFINITIVA
+  Future<void> _eliminarCuentaMedico() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
+      final url = Uri.parse(
+        "https://docya-railway-production.up.railway.app/medicos/${widget.medicoId}/delete",
+      );
+
+      final res = await http.delete(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          if (token != null) "Authorization": "Bearer $token",
+        },
+      );
+
+      if (res.statusCode == 200) {
+        await prefs.clear();
+
+        if (!mounted) return;
+
+        DocYaSnackbar.show(
+          context,
+          title: "Cuenta eliminada",
+          message: "Tu cuenta ha sido eliminada correctamente.",
+          type: SnackType.success,
+        );
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreenPro()),
+          (_) => false,
+        );
+      } else {
+        DocYaSnackbar.show(
+          context,
+          title: "Error",
+          message: "No se pudo eliminar la cuenta: ${res.body}",
+          type: SnackType.error,
+        );
+      }
+    } catch (e) {
+      DocYaSnackbar.show(
+        context,
+        title: "Error inesperado",
+        message: e.toString(),
+        type: SnackType.error,
+      );
+    }
+  }
+
+  // 🔥 CERRAR SESIÓN
   Future<void> _cerrarSesion() async {
     final confirmar = await showDialog<bool>(
       context: context,
@@ -141,13 +240,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     if (confirmar != true) return;
 
-    // 🔹 Limpiar token y datos locales
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
     if (!mounted) return;
 
-    // 🔹 Mostrar feedback visual
     DocYaSnackbar.show(
       context,
       title: "👋 Sesión finalizada",
@@ -155,7 +252,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
       type: SnackType.info,
     );
 
-    // 🔹 Redirigir al login (borrando navegación anterior)
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreenPro()),
@@ -163,6 +259,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  // 🔥 TARJETA VISUAL
   Widget _infoTile(IconData icon, String title, String? subtitle) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -206,8 +303,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           gradient: LinearGradient(
             colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+            end: Alignment.bottomRight),
         ),
         child: _loading
             ? const Center(child: CircularProgressIndicator(color: Colors.white))
@@ -219,9 +315,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       onTap: _cambiarFoto,
                       child: CircleAvatar(
                         radius: 55,
-                        backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty)
-                            ? NetworkImage(fotoUrl!)
-                            : null,
+                        backgroundImage:
+                            (fotoUrl != null && fotoUrl!.isNotEmpty)
+                                ? NetworkImage(fotoUrl!)
+                                : null,
                         backgroundColor: const Color(0xFF14B8A6),
                         child: (fotoUrl == null || fotoUrl!.isEmpty)
                             ? const Icon(Icons.person,
@@ -299,38 +396,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
 
+                  // 👉 BOTÓN ELIMINAR CUENTA
                   Center(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.edit, color: Colors.white),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF14B8A6),
+                    child: OutlinedButton.icon(
+                      icon:
+                          const Icon(Icons.delete_forever, color: Colors.redAccent),
+                      label: Text(
+                        "Eliminar cuenta",
+                        style: GoogleFonts.manrope(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.redAccent),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 14),
+                            horizontal: 26, vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
-                      onPressed: () async {
-                        final nuevoAlias = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => EditarAliasScreen(
-                              medicoId: widget.medicoId,
-                              aliasActual: alias ?? "",
-                            ),
-                          ),
-                        );
-                        if (nuevoAlias != null) setState(() => alias = nuevoAlias);
-                      },
-                      label: Text("Editar Alias / CBU",
-                          style: GoogleFonts.manrope(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
+                      onPressed: () => _confirmarEliminacionMedico(context),
                     ),
-                  ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.3),
+                  ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
                   Center(
                     child: OutlinedButton.icon(
@@ -355,3 +445,4 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 }
+
