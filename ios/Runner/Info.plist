@@ -48,7 +48,7 @@
 		<true/>
 	</dict>
 
-	<!-- 🔥 PERMISOS DE UBICACIÓN (Necesarios para DocYa Pro) -->
+	<!-- 🔥 PERMISOS DE UBICACIÓN (se pueden dejar, NO causan rechazo) -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>DocYa necesita tu ubicación para mostrar médicos cercanos.</string>
 
@@ -76,11 +76,10 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 
-	<!-- 🔥 NECESARIO PARA BACKGROUND LOCATION -->
+	<!-- 🔥 BACKGROUND MODES (solo remote-notification) -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
-		<string>location</string>
 	</array>
 
 	<key>UIApplicationSupportsIndirectInputEvents</key>
