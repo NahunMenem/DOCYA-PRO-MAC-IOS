@@ -2,8 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 
@@ -34,52 +36,56 @@
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 
-	<!-- 🔥 GOOGLE MAPS API KEY PARA iOS -->
+	<!-- GOOGLE MAPS API KEY -->
 	<key>GMSApiKey</key>
 	<string>AIzaSyBgfqDTSxmIinKcUcDW-KOg9VzGZpNUwBg</string>
 
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
-	<!-- 🔥 PARA PERMITIR LLAMADAS HTTP / APIs -->
+	<!-- PERMITIR HTTP -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
 
-	<!-- 🔥 PERMISOS DE UBICACIÓN (se pueden dejar, NO causan rechazo) -->
+	<!-- PERMISOS DE UBICACIÓN (requeridos por Apple si usás background location) -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>DocYa necesita tu ubicación para mostrar médicos cercanos.</string>
+	<string>DocYa utiliza tu ubicación para asignarte pacientes cercanos.</string>
 
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>DocYa necesita tu ubicación en segundo plano para brindarte atención médica.</string>
+	<string>DocYa necesita tu ubicación en segundo plano para actualizaciones en tiempo real durante una consulta médica.</string>
 
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>DocYa necesita tu ubicación para funcionar correctamente.</string>
+	<string>DocYa necesita tu ubicación para poder seguir mostrando tu disponibilidad y recorrido.</string>
 
-	<!-- 🔥 PERMISOS DE CÁMARA / MIC / FOTOS -->
+	<!-- CÁMARA / MIC / FOTOS -->
 	<key>NSCameraUsageDescription</key>
-	<string>DocYa necesita acceder a la cámara para tomar una foto de tu DNI.</string>
+	<string>DocYa necesita acceder a la cámara para tomar fotos necesarias para tu perfil profesional.</string>
 
 	<key>NSMicrophoneUsageDescription</key>
-	<string>DocYa necesita acceder al micrófono para videollamadas o grabaciones.</string>
+	<string>DocYa necesita el micrófono para videollamadas y soporte dentro de la app.</string>
 
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DocYa necesita acceder a tu galería para adjuntar una foto de tu DNI.</string>
+	<string>DocYa necesita acceder a tu galería para cargar tus documentos profesionales.</string>
 
-	<!-- 🔥 NOTIFICACIONES -->
+	<!-- NOTIFICACIONES -->
 	<key>NSUserNotificationUsageDescription</key>
-	<string>DocYa necesita enviar notificaciones para avisarte sobre consultas y mensajes.</string>
+	<string>DocYa envía notificaciones para avisarte cuando tenés una nueva consulta.</string>
 
-	<!-- 🔥 NECESARIO PARA GOOGLE MAPS EN FLUTTER -->
+	<!-- NECESARIO PARA GOOGLE MAPS EN FLUTTER -->
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 
-	<!-- 🔥 BACKGROUND MODES (solo remote-notification) -->
+	<!-- ========================================================= -->
+	<!-- 🔥 BACKGROUND MODES COMPLETOS (ESTILO UBER)               -->
+	<!-- ========================================================= -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>location</string>
+		<string>fetch</string>
 	</array>
 
 	<key>UIApplicationSupportsIndirectInputEvents</key>
@@ -107,7 +113,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 
-	<!-- 🔥 FCM DEV MODE -->
+	<!-- 🔥 FCM (development o production según tu certificado) -->
 	<key>aps-environment</key>
 	<string>development</string>
 
