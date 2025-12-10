@@ -50,22 +50,32 @@
 		<true/>
 	</dict>
 
-	<!-- PERMISOS DE UBICACIÓN (requeridos por Apple si usás background location) -->
+	<!-- ============================== -->
+	<!-- PERMISOS DE UBICACIÓN COMPLETOS -->
+	<!-- ============================== -->
+
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>DocYa utiliza tu ubicación para asignarte pacientes cercanos.</string>
 
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>DocYa necesita tu ubicación en segundo plano para actualizaciones en tiempo real durante una consulta médica.</string>
+	<string>DocYa necesita tu ubicación incluso con la app cerrada para recibir consultas en tiempo real.</string>
 
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>DocYa necesita tu ubicación para poder seguir mostrando tu disponibilidad y recorrido.</string>
+	<string>DocYa requiere acceso continuo a tu ubicación para compartir tu disponibilidad y recorrido.</string>
+
+	<!-- Requerido por iOS 15+ para permisos extendidos -->
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>PreciseLocation</key>
+		<string>DocYa necesita ubicación precisa para asignar consultas cercanas.</string>
+	</dict>
 
 	<!-- CÁMARA / MIC / FOTOS -->
 	<key>NSCameraUsageDescription</key>
-	<string>DocYa necesita acceder a la cámara para tomar fotos necesarias para tu perfil profesional.</string>
+	<string>DocYa necesita acceder a la cámara para tomar fotos de perfil profesional.</string>
 
 	<key>NSMicrophoneUsageDescription</key>
-	<string>DocYa necesita el micrófono para videollamadas y soporte dentro de la app.</string>
+	<string>DocYa necesita usar el micrófono para videollamadas y soporte.</string>
 
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>DocYa necesita acceder a tu galería para cargar tus documentos profesionales.</string>
@@ -78,14 +88,14 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 
-	<!-- ========================================================= -->
-	<!-- 🔥 BACKGROUND MODES COMPLETOS (ESTILO UBER)               -->
-	<!-- ========================================================= -->
+	<!-- ============================================= -->
+	<!-- 🔥 BACKGROUND MODES ESTILO UBER / RAPPI       -->
+	<!-- ============================================= -->
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>remote-notification</string>
 		<string>location</string>
 		<string>fetch</string>
+		<string>remote-notification</string>
 	</array>
 
 	<key>UIApplicationSupportsIndirectInputEvents</key>
@@ -113,9 +123,10 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 
-	<!-- 🔥 FCM (development o production según tu certificado) -->
+	<!-- 🔥 FCM ENTORNO -->
 	<key>aps-environment</key>
 	<string>development</string>
 
 </dict>
 </plist>
+
