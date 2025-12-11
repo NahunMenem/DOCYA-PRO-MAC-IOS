@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../services/background_service.dart'; // o la ruta donde está onStart
 import 'inicio_screen.dart';
 import 'historial_screen.dart';
 import 'consultas_en_curso_screen.dart';
@@ -58,7 +58,6 @@ class _HomeMenuState extends State<HomeMenu> {
     return [
       InicioScreen(
         userId: widget.userId,
-        onAceptarConsulta: _setConsultaActiva,
       ),
       HistorialScreen(medicoId: int.parse(widget.userId)),
       _consultaActiva != null
