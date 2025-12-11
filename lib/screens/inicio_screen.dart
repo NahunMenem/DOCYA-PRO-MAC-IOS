@@ -1,111 +1,30 @@
 // ==================================================
-// TU CÓDIGO COMPLETO TAL CUAL, CON AÑADIDOS DEL BLOQUEO
+// 🧭 INICIOSCREEN (DocYa Pro) – VERSION FINAL SIN WEBSOCKET EN UI
 // ==================================================
 
-import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import '../services/background_service.dart';
+import '../utils/local_notifications.dart';
 import '../widgets/consulta_entrante_modal.dart';
 import '../widgets/docya_snackbar.dart';
 import '../widgets/recordatorio_elementos_medico.dart';
 
-// ==================================================
-// 🧠 FUNCIÓN DE BACKGROUND
-// ==================================================
-// ==================================================
-// 🧠 FUNCIÓN DE BACKGROUND (CORREGIDA)
-// ==================================================
-@pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
-  String? medicoId;
-
-  service.on("setUserId").listen((event) {
-    medicoId = event?["userId"];
-  });
-
-  if (service is AndroidServiceInstance) {
-    service.setForegroundNotificationInfo(
-      title: "DocYa Pro activo",
-      content: "Compartiendo tu ubicación para recibir pacientes cercanos.",
-    );
-  }
-
-  Timer.periodic(const Duration(seconds: 20), (timer) async {
-    // ================================
-    // 🔥 CARGAR DISPONIBILIDAD REAL
-    // ================================
-    final prefs = await SharedPreferences.getInstance();
-    final disponible = prefs.getBool("disponible") ?? false;
-
-    // 🛑 SI NO ESTÁ DISPONIBLE → NO ENVIAR
-    if (!disponible) {
-      print("🛑 [BG] Médico NO disponible → no envío ubicación");
-      return;
-    }
-
-    // ================================
-    // 🌎 SI ESTÁ DISPONIBLE → ENVIAR
-    // ================================
-    if (!(await Geolocator.isLocationServiceEnabled())) return;
-
-    final permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) return;
-
-    final pos = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    if (medicoId != null) {
-      try {
-        await http.post(
-          Uri.parse(
-              "https://docya-railway-production.up.railway.app/medico/$medicoId/ubicacion"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "lat": pos.latitude,
-            "lng": pos.longitude,
-          }),
-        );
-        print("📡 [BG] Ubicación enviada (modo DISPONIBLE)");
-      } catch (e) {
-        print("⚠️ [BG] Error enviando ubicación: $e");
-      }
-    }
-  });
-
-  service.on("stopService").listen((event) async {
-    print("🛑 BG service detenido");
-    service.stopSelf();
-  });
-}
-
-
-// ==================================================
-// 🧭 INICIOSCREEN (DocYa Pro)
-// ==================================================
 class InicioScreen extends StatefulWidget {
   final String userId;
-  final Function(Map<String, dynamic>)? onAceptarConsulta;
 
   const InicioScreen({
     super.key,
     required this.userId,
-    this.onAceptarConsulta,
   });
 
   @override
@@ -119,8 +38,7 @@ class _InicioScreenState extends State<InicioScreen>
   late GoogleMapController _mapController;
   int totalConsultas = 0;
   int totalGanancias = 0;
-  WebSocketChannel? _channel;
-  Timer? _heartbeatTimer;
+
   late AnimationController _pulseController;
 
   final String _mapStyle = '''
@@ -138,12 +56,14 @@ class _InicioScreenState extends State<InicioScreen>
   @override
   void initState() {
     super.initState();
+
     _pulseController =
         AnimationController(vsync: this, duration: const Duration(seconds: 2))
           ..repeat(reverse: false);
+
     _cargarDisponibilidad();
     _cargarStats();
-    setState(() => mostrarRecordatorio = true);
+    _escucharEventosBackground();
     _mostrarRecordatorioSiCorresponde();
   }
 
@@ -151,10 +71,100 @@ class _InicioScreenState extends State<InicioScreen>
   void dispose() {
     _pulseController.dispose();
     _detenerServicioBackground();
-    _desconectarWS();
     super.dispose();
   }
 
+  // --------------------------------------------------------
+  // 🔔 ESCUCHAR EVENTOS DEL BACKGROUND SERVICE
+  // --------------------------------------------------------
+  void _escucharEventosBackground() {
+    final service = FlutterBackgroundService();
+
+    service.on("consulta_nueva").listen((data) {
+      mostrarConsultaEntrante(context, widget.userId);
+      _cargarStats();
+    });
+  }
+
+
+  Future<bool> _pedirPermisosUbicacion(BuildContext context) async {
+    // 1) Permiso cuando la app está en uso
+    var statusWhen = await Permission.locationWhenInUse.status;
+
+    if (!statusWhen.isGranted) {
+      statusWhen = await Permission.locationWhenInUse.request();
+    }
+
+    if (!statusWhen.isGranted) {
+      DocYaSnackbar.show(
+        context,
+        title: "Permiso requerido",
+        message: "Debes otorgar acceso a tu ubicación para recibir consultas.",
+        type: SnackType.error,
+      );
+      return false;
+    }
+
+    // 2) Permiso en segundo plano (Android 10+)
+    var statusAlways = await Permission.locationAlways.status;
+
+    if (!statusAlways.isGranted) {
+      statusAlways = await Permission.locationAlways.request();
+    }
+
+    if (!statusAlways.isGranted) {
+      DocYaSnackbar.show(
+        context,
+        title: "Permiso requerido",
+        message:
+            "Necesitamos permiso de ubicación en segundo plano para enviarte consultas incluso con la pantalla bloqueada.",
+        type: SnackType.error,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+
+
+  // --------------------------------------------------------
+  // Cargar disponibilidad
+  // --------------------------------------------------------
+  Future<void> _cargarDisponibilidad() async {
+    final prefs = await SharedPreferences.getInstance();
+    disponible = prefs.getBool("disponible") ?? false;
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _guardarDisponibilidad(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("disponible", value);
+  }
+
+  // --------------------------------------------------------
+  // Cargar estadísticas
+  // --------------------------------------------------------
+  Future<void> _cargarStats() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+            "https://docya-railway-production.up.railway.app/auth/medico/${widget.userId}/stats"),
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() {
+          totalConsultas = data["consultas"] ?? 0;
+          totalGanancias = ((data["ganancias"] ?? 0) * 0.8).round();
+        });
+      }
+    } catch (_) {}
+  }
+
+  // --------------------------------------------------------
+  // RECORDATORIO DIARIO
+  // --------------------------------------------------------
   Future<void> _mostrarRecordatorioSiCorresponde() async {
     final prefs = await SharedPreferences.getInstance();
     final hoy = DateTime.now().toIso8601String().substring(0, 10);
@@ -166,149 +176,155 @@ class _InicioScreenState extends State<InicioScreen>
     }
   }
 
+  // --------------------------------------------------------
+  // 🚀 INICIAR SERVICIO BACKGROUND
+  // --------------------------------------------------------
   Future<void> _iniciarServicioBackground() async {
-    final status = await Permission.locationAlways.request();
-    if (!status.isGranted) return;
-
     final service = FlutterBackgroundService();
 
-    if (await service.isRunning()) return;
+    if (!(await service.isRunning())) {
+      await service.configure(
+        androidConfiguration: AndroidConfiguration(
+          onStart: onStart,
+          autoStart: false,
+          isForegroundMode: true,
+          notificationChannelId: 'docya_background',
+          initialNotificationTitle: 'DocYa Pro activo',
+          initialNotificationContent:
+              'Enviando ubicación y escuchando consultas...',
+          foregroundServiceNotificationId: 88,
+        ),
+        iosConfiguration: IosConfiguration(),
+      );
 
-    await service.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStart,
-        autoStart: false,
-        isForegroundMode: true,
-        notificationChannelId: 'docya_background',
-        initialNotificationTitle: 'DocYa Pro activo',
-        initialNotificationContent: 'Enviando tu ubicación en tiempo real...',
-        foregroundServiceNotificationId: 88,
-      ),
-      iosConfiguration: IosConfiguration(),
-    );
+      await service.startService();
+    }
 
-    await service.startService();
+    // Enviar el userId al background
     service.invoke("setUserId", {"userId": widget.userId});
   }
 
+
+  // --------------------------------------------------------
+  // 🛑 DETENER SERVICIO BACKGROUND
+  // --------------------------------------------------------
   Future<void> _detenerServicioBackground() async {
     final service = FlutterBackgroundService();
-
     if (await service.isRunning()) {
       service.invoke("stopService");
     }
   }
 
-  Future<void> _cargarDisponibilidad() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool("disponible", false);
-    setState(() => disponible = false);
-    print("⛔ InicioScreen → Médico NO disponible por defecto");
-  }
-
-  Future<void> _guardarDisponibilidad(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool("disponible", value);
-  }
-
-  Future<void> _cargarStats() async {
-    try {
-      final res = await http.get(
-        Uri.parse(
-            "https://docya-railway-production.up.railway.app/auth/medico/${widget.userId}/stats"),
-      );
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        setState(() {
-          totalConsultas = data["consultas"] ?? 0;
-          totalGanancias = ((data["ganancias"] ?? 0) * 0.8).round();
-        });
-      }
-    } catch (_) {}
-  }
-
-  void _conectarWS() {
-    if (_channel != null) return;
-
-    final url =
-        "wss://docya-railway-production.up.railway.app/ws/medico/${widget.userId}";
-    print("🔌 Conectando WebSocket médico ${widget.userId}");
-
-    // 👇 ESTA ES LA NUEVA LÍNEA COMPATIBLE CON iOS EN BACKGROUND
-    _channel = IOWebSocketChannel.connect(
-      Uri.parse(url),
-      pingInterval: const Duration(seconds: 20),
-    );
-
-    _channel!.stream.listen((event) async {
-      if (event == "pong") return;
-
-      Map<String, dynamic> data;
-      try {
-        data = jsonDecode(event);
-      } catch (_) {
+  // --------------------------------------------------------
+  // 🟢/🔴 TOGGLE DISPONIBLE
+  // --------------------------------------------------------
+  Future<void> _handleToggleDisponible(bool value) async {
+    if (value) {
+      // 0) Solicitar permisos ANTES DE TODO
+      final permisosOk = await _pedirPermisosUbicacion(context);
+      if (!permisosOk) {
+        setState(() => disponible = false);
         return;
       }
 
-      if (data["tipo"] == "consulta_nueva") {
-        await mostrarConsultaEntrante(context, widget.userId);
-        _cargarStats();
+      // NO marcar disponible todavía
+      await _guardarDisponibilidad(true);
+
+      // 1) Iniciar background (abre WS)
+      await _iniciarServicioBackground();
+
+      // 2) Reintentar hasta que el WS esté activo
+      bool activado = false;
+
+      for (int i = 0; i < 10; i++) {
+        try {
+          final res = await http.post(
+            Uri.parse(
+                "https://docya-railway-production.up.railway.app/medico/${widget.userId}/status"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({"disponible": true}),
+          );
+
+          final data = jsonDecode(res.body);
+
+          if (data["ok"] == true) {
+            print("🟢 WS OK → Disponible confirmado");
+            activado = true;
+            break;
+          }
+        } catch (_) {}
+
+        print("⏳ Esperando WS… intento ${i + 1}/10");
+        await Future.delayed(const Duration(milliseconds: 500));
       }
-    }, onError: (_) {
-      _reintentarWS();
-    }, onDone: () {
-      _reintentarWS();
-    });
 
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 25), (_) {
-      _channel?.sink.add(jsonEncode({"tipo": "ping"}));
-    });
+      if (!activado) {
+        await _guardarDisponibilidad(false);
+        setState(() => disponible = false);
+        DocYaSnackbar.show(
+          context,
+          title: "Error",
+          message: "No se pudo activar disponible. Revisá los permisos.",
+          type: SnackType.error,
+        );
+        return;
+      }
+
+      // 3) Todo OK
+      setState(() => disponible = true);
+      _pulseController.repeat();
+
+      DocYaSnackbar.show(
+        context,
+        title: "🟢 Disponible",
+        message: "Ahora estás recibiendo consultas.",
+        type: SnackType.success,
+      );
+
+    } else {
+      await _guardarDisponibilidad(false);
+      setState(() => disponible = false);
+
+      try {
+        await http.post(
+          Uri.parse(
+              "https://docya-railway-production.up.railway.app/medico/${widget.userId}/status"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({"disponible": false}),
+        );
+      } catch (_) {}
+
+      _pulseController.stop();
+      await _detenerServicioBackground();
+
+      DocYaSnackbar.show(
+        context,
+        title: "🔴 No disponible",
+        message: "Ya no recibirás consultas.",
+        type: SnackType.error,
+      );
+    }
   }
 
 
-  void _reintentarWS() {
-    _channel = null;
-    Future.delayed(const Duration(seconds: 2), () {
-      if (disponible) _conectarWS();
-    });
-  }
 
-  void _desconectarWS() {
-    _heartbeatTimer?.cancel();
-    _channel?.sink.close();
-    _channel = null;
-  }
-
+  // --------------------------------------------------------
+  // MAPA
+  // --------------------------------------------------------
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     _mapController.setMapStyle(_mapStyle);
   }
 
-  // ==================================================
-  // 🛑 **AQUÍ VIENE EL BLOQUEO DE NAVEGACIÓN**
-  // ==================================================
-
+  // --------------------------------------------------------
+  // UI
+  // --------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        if (disponible) {
-          DocYaSnackbar.show(
-            context,
-            title: "⚠️ Modo disponible activo",
-            message:
-                "Ponete en 'NO disponible' para poder navegar la app.",
-            type: SnackType.warning,
-          );
-          return false;
-        }
-        return true;
-      },
+      onWillPop: () async => !disponible,
       child: Stack(
         children: [
-          // ==================================================
-          // MAPA (TAL CUAL LO TENÍAS)
-          // ==================================================
           GoogleMap(
             onMapCreated: _onMapCreated,
             initialCameraPosition: const CameraPosition(
@@ -318,10 +334,7 @@ class _InicioScreenState extends State<InicioScreen>
             zoomControlsEnabled: false,
           ),
 
-          // ==================================================
-          // TODO TU UI (SIN CAMBIAR NADA)
-          // ==================================================
-
+          // Logo
           Positioned(
             top: 45,
             left: 0,
@@ -342,9 +355,9 @@ class _InicioScreenState extends State<InicioScreen>
               child: Center(
                 child: AnimatedBuilder(
                   animation: _pulseController,
-                  builder: (context, child) {
-                    double scale = 1 + (_pulseController.value * 1.2);
-                    double opacity = 1 - _pulseController.value;
+                  builder: (_, __) {
+                    final scale = 1 + (_pulseController.value * 1.2);
+                    final opacity = 1 - _pulseController.value;
                     return Transform.scale(
                       scale: scale,
                       child: Container(
@@ -362,9 +375,6 @@ class _InicioScreenState extends State<InicioScreen>
               ),
             ),
 
-          // ===============================================================
-          // 💥 ACÁ ESTÁ TU MODAL DE BLOQUEO (SUPER IMPORTANTE)
-          // ===============================================================
           if (disponible)
             Positioned.fill(
               child: GestureDetector(
@@ -372,21 +382,14 @@ class _InicioScreenState extends State<InicioScreen>
                 onTap: () {
                   DocYaSnackbar.show(
                     context,
-                    title: "⚠️ Modo disponible activo",
-                    message:
-                        "Ponete en 'NO disponible' para poder usar la app.",
+                    title: "⚠ Modo disponible",
+                    message: "Ponete en 'NO disponible' para usar la app.",
                     type: SnackType.warning,
                   );
                 },
-                child: Container(
-                  color: Colors.transparent,
-                ),
+                child: Container(color: Colors.transparent),
               ),
             ),
-
-          // ==================================================
-          // ⚠ NO MODIFIQUÉ NADA DEL RESTO
-          // ==================================================
 
           Positioned(
             top: 100,
@@ -411,10 +414,9 @@ class _InicioScreenState extends State<InicioScreen>
     );
   }
 
-  // ==================================================
-  // 🔷 SECCIÓNES ORIGINALES (NO TOCADA)
-  // ==================================================
-
+  // --------------------------------------------------------
+  // INFO CARDS
+  // --------------------------------------------------------
   Widget _buildCardDisponibilidad() {
     return Card(
       color: Colors.white.withOpacity(0.95),
@@ -453,90 +455,6 @@ class _InicioScreenState extends State<InicioScreen>
         ),
       ),
     );
-  }
-
-  Future<void> _handleToggleDisponible(bool value) async {
-    if (value) {
-      LocationPermission perm = await Geolocator.checkPermission();
-
-      if (perm == LocationPermission.denied ||
-          perm == LocationPermission.deniedForever) {
-        perm = await Geolocator.requestPermission();
-      }
-
-      if (perm != LocationPermission.always &&
-          perm != LocationPermission.whileInUse) {
-        DocYaSnackbar.show(
-          context,
-          title: "⚠️ Ubicación requerida",
-          message: "Debes permitir ubicación.",
-          type: SnackType.error,
-        );
-
-        setState(() => disponible = false);
-        await _guardarDisponibilidad(false);
-        return;
-      }
-
-      setState(() => disponible = true);
-      await _guardarDisponibilidad(true);
-
-      try {
-        await http.post(
-          Uri.parse(
-              "https://docya-railway-production.up.railway.app/medico/${widget.userId}/status"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"disponible": true}),
-        );
-      } catch (_) {}
-
-      DocYaSnackbar.show(
-        context,
-        title: "✅ Modo disponible activado",
-        message: "Ahora estás recibiendo solicitudes.",
-        type: SnackType.success,
-      );
-
-      try {
-        final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
-
-        await http.post(
-          Uri.parse(
-              "https://docya-railway-production.up.railway.app/medico/${widget.userId}/ubicacion"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"lat": pos.latitude, "lng": pos.longitude}),
-        );
-      } catch (_) {}
-
-      _conectarWS();
-      await _iniciarServicioBackground();
-      _pulseController.repeat();
-    } else {
-      setState(() => disponible = false);
-      await _guardarDisponibilidad(false);
-
-      try {
-        await http.post(
-          Uri.parse(
-              "https://docya-railway-production.up.railway.app/medico/${widget.userId}/status"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"disponible": false}),
-        );
-      } catch (_) {}
-
-      DocYaSnackbar.show(
-        context,
-        title: "🛑 Modo disponible desactivado",
-        message: "Ya no recibirás pacientes.",
-        type: SnackType.error,
-      );
-
-      _desconectarWS();
-      _pulseController.stop();
-      await _detenerServicioBackground();
-    }
   }
 
   Widget _buildStatsInferiores() {
