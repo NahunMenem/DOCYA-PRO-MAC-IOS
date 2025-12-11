@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+
+	<key>CFBundleDisplayName</key>
+	<string>DocYapro</string>
+
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+
+	<!-- GOOGLE MAPS API KEY -->
+	<key>GMSApiKey</key>
+	<string>AIzaSyBgfqDTSxmIinKcUcDW-KOg9VzGZpNUwBg</string>
+
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+
+	<!-- PERMITIR HTTP -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+
+	<!-- ============================== -->
+	<!-- PERMISOS DE UBICACIÓN COMPLETOS -->
+	<!-- ============================== -->
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DocYa utiliza tu ubicación para asignarte pacientes cercanos.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>DocYa necesita tu ubicación incluso con la app cerrada para recibir consultas en tiempo real.</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>DocYa requiere acceso continuo a tu ubicación para compartir tu disponibilidad y recorrido.</string>
+
+	<!-- Requerido por iOS 15+ para permisos extendidos -->
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>PreciseLocation</key>
+		<string>DocYa necesita ubicación precisa para asignar consultas cercanas.</string>
+	</dict>
+
+	<!-- CÁMARA / MIC / FOTOS -->
+	<key>NSCameraUsageDescription</key>
+	<string>DocYa necesita acceder a la cámara para tomar fotos de perfil profesional.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>DocYa necesita usar el micrófono para videollamadas y soporte.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DocYa necesita acceder a tu galería para cargar tus documentos profesionales.</string>
+
+	<!-- NOTIFICACIONES -->
+	<key>NSUserNotificationUsageDescription</key>
+	<string>DocYa envía notificaciones para avisarte cuando tenés una nueva consulta.</string>
+
+	<!-- NECESARIO PARA GOOGLE MAPS EN FLUTTER -->
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+
+	<!-- ============================================= -->
+	<!-- 🔥 BACKGROUND MODES ESTILO UBER / RAPPI       -->
+	<!-- ============================================= -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- 🔥 FCM ENTORNO -->
+	<key>aps-environment</key>
+	<string>development</string>
+
+</dict>
+</plist>
