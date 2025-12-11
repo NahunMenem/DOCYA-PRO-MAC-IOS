@@ -242,6 +242,8 @@ class NotificationService {
 
     // CONSULTA ENTRANTE
     if (data["tipo"] == "consulta_nueva") {
+    // 🔥 INICIAR EL TIMER REAL APENAS LLEGA LA NOTIFICACIÓN
+      iniciarTimerConsultaGlobal();
       final profesionalId = data["medico_id"] ?? data["enfermero_id"];
 
       if (profesionalId != null && navigatorKey.currentContext != null) {
