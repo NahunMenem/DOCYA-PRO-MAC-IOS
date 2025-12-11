@@ -50,27 +50,32 @@
 		<true/>
 	</dict>
 
-	<!-- ============================== -->
-	<!-- PERMISOS DE UBICACIÓN COMPLETOS -->
-	<!-- ============================== -->
+	<!-- ========================================================= -->
+	<!-- 📍 PERMISOS DE UBICACIÓN (VERSIONES CORRECTAS PARA iOS)    -->
+	<!-- ========================================================= -->
+
+	<key>NSLocationUsageDescription</key>
+	<string>DocYa necesita tu ubicación para asignarte consultas médicas cercanas.</string>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>DocYa utiliza tu ubicación para asignarte pacientes cercanos.</string>
+	<string>DocYa utiliza tu ubicación para mostrarte pacientes cercanos.</string>
 
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>DocYa necesita tu ubicación incluso con la app cerrada para recibir consultas en tiempo real.</string>
+	<string>DocYa necesita acceder a tu ubicación en segundo plano para enviarte consultas médicas cercanas mientras estás activo en la app.</string>
 
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>DocYa requiere acceso continuo a tu ubicación para compartir tu disponibilidad y recorrido.</string>
+	<string>DocYa requiere acceso continuo a tu ubicación para asignarte pacientes durante tus turnos activos.</string>
 
-	<!-- Requerido por iOS 15+ para permisos extendidos -->
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-		<key>PreciseLocation</key>
-		<string>DocYa necesita ubicación precisa para asignar consultas cercanas.</string>
-	</dict>
+	<!-- Precisión (recomendado para iOS 14+) -->
+	<key>NSLocationAccuracyAuthorizationDescription</key>
+	<string>DocYa necesita ubicación precisa para asignarte consultas médicas cercanas.</string>
 
-	<!-- CÁMARA / MIC / FOTOS -->
+	<!-- (ELIMINADO) NSLocationTemporaryUsageDescriptionDictionary → puede causar rechazo -->
+
+	<!-- ========================================================= -->
+	<!-- 📸 CÁMARA / MICRÓFONO / FOTOS -->
+	<!-- ========================================================= -->
+
 	<key>NSCameraUsageDescription</key>
 	<string>DocYa necesita acceder a la cámara para tomar fotos de perfil profesional.</string>
 
@@ -80,7 +85,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>DocYa necesita acceder a tu galería para cargar tus documentos profesionales.</string>
 
-	<!-- NOTIFICACIONES -->
+	<!-- 🔔 NOTIFICACIONES -->
 	<key>NSUserNotificationUsageDescription</key>
 	<string>DocYa envía notificaciones para avisarte cuando tenés una nueva consulta.</string>
 
@@ -88,9 +93,9 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 
-	<!-- ============================================= -->
-	<!-- 🔥 BACKGROUND MODES ESTILO UBER / RAPPI       -->
-	<!-- ============================================= -->
+	<!-- ========================================================= -->
+	<!-- 🔥 BACKGROUND MODES (estilo Uber / Rappi) -->
+	<!-- ========================================================= -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
