@@ -1,46 +1,159 @@
+// ==========================================================
+// DOCYA PRO – MAIN FINAL (MÉDICOS / ENFERMEROS)
+// Notificaciones + Sonido + Modal Consulta Entrante
+// iOS + Android 100% compatible
+// ==========================================================
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:docya_pro/theme/docya_theme.dart';
-import 'screens/splash_pro.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-// 📌 Pantalla de login principal
+import 'package:docya_pro/theme/docya_theme.dart';
+
+import 'screens/splash_pro.dart';
 import 'screens/login_screen_pro.dart';
-// 📌 Modal de consultas entrantes
-import 'widgets/consulta_entrante_modal.dart';
-// 📌 Chat de médico
 import 'screens/chat_medico_screen.dart';
 
-// 👇 Clave global para acceder al Navigator desde cualquier parte
+// MODAL consulta entrante
+import 'widgets/consulta_entrante_modal.dart';
+
+// Navegación global
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// 🔔 Handler para notificaciones en segundo plano
+// Notificaciones locales
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+// ==========================================================
+// 🔥 BACKGROUND HANDLER
+// ==========================================================
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint("📩 Notificación en background: ${message.messageId}");
-}
+  debugPrint("📩 Background push: ${message.data}");
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const DocYaApp());
+  if (message.data["tipo"] == "consulta_nueva") {
+    await _mostrarNotificacionLocalConsulta();
+  }
 
-  // 🔥 Inicializamos Firebase/FCM después del runApp
-  _initFirebase();
-}
-
-Future<void> _initFirebase() async {
-  try {
-    await Firebase.initializeApp();
-
-    // Registrar handler de background
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Inicializar notificaciones
-    await NotificationService.init();
-  } catch (e) {
-    debugPrint("❌ Error inicializando Firebase: $e");
+  if (message.data["tipo"] == "nuevo_mensaje") {
+    await _mostrarNotificacionLocalChat(
+      message.data["mensaje"] ?? "",
+    );
   }
 }
 
+// ==========================================================
+// 🔔 Notificación Local para consulta entrante
+// ==========================================================
+Future<void> _mostrarNotificacionLocalConsulta() async {
+  await flutterLocalNotificationsPlugin.show(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    "Nueva consulta entrante",
+    "Tienes una consulta para aceptar",
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'docya_channel',
+        'Notificaciones DocYa',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound('alerta'),
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+        sound: "alert.caf",
+      ),
+    ),
+    payload: jsonEncode({"tipo": "consulta"}),
+  );
+}
+
+// ==========================================================
+// 🔔 Notificación Local para chat
+// ==========================================================
+Future<void> _mostrarNotificacionLocalChat(String mensaje) async {
+  await flutterLocalNotificationsPlugin.show(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    "Nuevo mensaje",
+    mensaje,
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'docya_channel',
+        'Notificaciones DocYa',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound('alerta'),
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+        sound: "alert.caf",
+      ),
+    ),
+    payload: jsonEncode({"tipo": "chat"}),
+  );
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Canal Android
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(
+    const AndroidNotificationChannel(
+      'docya_channel',
+      'Notificaciones DocYa',
+      importance: Importance.max,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('alerta'),
+    ),
+  );
+
+  // Inicialización de notificaciones locales
+  const initSettings = InitializationSettings(
+    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    iOS: DarwinInitializationSettings(),
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: (resp) {
+      _onNotificationTap(resp.payload);
+    },
+  );
+
+  runApp(const DocYaApp());
+
+  // 🚀 Después del runApp inicializamos FCM
+  NotificationService.init();
+}
+
+// ==========================================================
+// TAP de notificación
+// ==========================================================
+void _onNotificationTap(String? payload) {
+  if (payload == null) return;
+
+  final data = jsonDecode(payload);
+
+  if (data["tipo"] == "chat") {
+    // Abrir chat si querés
+  }
+}
+
+// ==========================================================
+// APP PRINCIPAL
+// ==========================================================
 class DocYaApp extends StatelessWidget {
   const DocYaApp({super.key});
 
@@ -49,89 +162,120 @@ class DocYaApp extends StatelessWidget {
     return MaterialApp(
       title: 'DocYa Pro',
       debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey, // 👈 permite abrir modales o pantallas desde notificaciones
-      theme: DocYaTheme.light, // 🌞 Tema claro DocYa
-      darkTheme: DocYaTheme.dark, // 🌙 Tema oscuro DocYa Pro
-      themeMode: ThemeMode.dark, // 👈 usamos modo oscuro por defecto
+      navigatorKey: navigatorKey,
+      theme: DocYaTheme.light,
+      darkTheme: DocYaTheme.dark,
+      themeMode: ThemeMode.dark,
       home: const SplashPro(),
     );
   }
 }
 
+// ==========================================================
+// 🔔 NOTIFICATION SERVICE – MÉDICOS
+// ==========================================================
 class NotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  /// Inicializa la configuración de notificaciones y listeners FCM
   static Future<void> init() async {
-    // Solicitar permisos (solo iOS)
+    // Permisos iOS
+    await Permission.notification.request();
+
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    debugPrint("🔔 Permisos notificaciones: ${settings.authorizationStatus}");
+    debugPrint("🔔 Permisos: ${settings.authorizationStatus}");
 
-    // Obtener token FCM
+    // Token
     String? token = await _messaging.getToken();
-    debugPrint("🔑 Token FCM: $token");
+    debugPrint("🔑 FCM Token Médico: $token");
 
-    // TODO: enviar este token a tu backend
-    // await api.guardarTokenMedico(token);
+    // ==========================================================
+    // 🟢 1) getInitialMessage (APP CERRADA)
+    // ==========================================================
+    RemoteMessage? initialMsg =
+        await FirebaseMessaging.instance.getInitialMessage();
 
-    // 🔹 Listener para notificaciones en foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("📨 Notificación foreground: ${message.data}");
+    if (initialMsg != null) {
+      Future.microtask(() {
+        _handlePush(initialMsg);
+      });
+    }
 
-      if (message.data["tipo"] == "consulta_nueva") {
-        final profesionalId =
-            message.data["medico_id"] ?? message.data["enfermero_id"];
-        if (profesionalId != null && navigatorKey.currentContext != null) {
-          mostrarConsultaEntrante(
-            navigatorKey.currentContext!,
-            profesionalId.toString(),
-          );
-        }
-      }
-
-      // 💬 Nuevo mensaje de chat
-      if (message.data["tipo"] == "nuevo_mensaje") {
-        final consultaId = int.tryParse(message.data["consulta_id"] ?? "0");
-        final remitenteId = message.data["remitente_id"] ?? "";
-        if (consultaId != null && consultaId > 0) {
-          ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-            SnackBar(
-              content: Text("💬 Nuevo mensaje en consulta $consultaId"),
-            ),
-          );
-
-          // 👉 Si querés abrir el chat directamente al recibirlo en foreground:
-          // navigatorKey.currentState!.push(MaterialPageRoute(
-          //   builder: (_) => ChatMedicoScreen(
-          //     consultaId: consultaId,
-          //     medicoId: int.tryParse(remitenteId) ?? 0,
-          //     nombreMedico: "Dr. $remitenteId",
-          //   ),
-          // ));
-        }
-      }
+    // ==========================================================
+    // 🟢 2) FOREGROUND
+    // ==========================================================
+    FirebaseMessaging.onMessage.listen((message) {
+      debugPrint("📨 Foreground: ${message.data}");
+      _handlePush(message);
     });
 
-    // 🔹 Listener cuando la app está en background y se abre por una notificación
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (message.data["tipo"] == "nuevo_mensaje") {
-        final consultaId = int.tryParse(message.data["consulta_id"] ?? "0");
-        final remitenteId = message.data["remitente_id"] ?? "";
-        if (consultaId != null && consultaId > 0) {
-          navigatorKey.currentState!.push(MaterialPageRoute(
-            builder: (_) => ChatMedicoScreen(
-              consultaId: consultaId,
-              medicoId: int.tryParse(remitenteId) ?? 0,
-              nombreMedico: "Dr. $remitenteId",
-            ),
-          ));
-        }
-      }
+    // ==========================================================
+    // 🟢 3) APP EN BACKGROUND → abierta desde notificación
+    // ==========================================================
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      Future.microtask(() {
+        _handlePush(message);
+      });
     });
+
+    // 🔥 iOS — obtener APNS + token real
+    await _fixAPNS();
+  }
+
+  // ==========================================================
+  // HANDLER GENERAL
+  // ==========================================================
+  static void _handlePush(RemoteMessage message) {
+    final data = message.data;
+
+    // CONSULTA ENTRANTE
+    if (data["tipo"] == "consulta_nueva") {
+      final profesionalId =
+          data["medico_id"] ?? data["enfermero_id"];
+
+      if (profesionalId != null && navigatorKey.currentContext != null) {
+        mostrarConsultaEntrante(
+          navigatorKey.currentContext!,
+          profesionalId.toString(),
+        );
+      }
+
+      _mostrarNotificacionLocalConsulta();
+    }
+
+    // CHAT
+    if (data["tipo"] == "nuevo_mensaje") {
+      final consultaId = int.tryParse(data["consulta_id"] ?? "0");
+      final remitenteId = data["remitente_id"] ?? "";
+
+      if (consultaId != null && consultaId > 0) {
+        _mostrarNotificacionLocalChat(
+          data["mensaje"] ?? "",
+        );
+      }
+    }
+  }
+
+  // ==========================================================
+  // FIX APNS
+  // ==========================================================
+  static Future<void> _fixAPNS() async {
+    debugPrint("🍏 Esperando APNS…");
+
+    String? apns = await FirebaseMessaging.instance.getAPNSToken();
+    int retry = 0;
+
+    while (apns == null && retry < 8) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      apns = await FirebaseMessaging.instance.getAPNSToken();
+      retry++;
+    }
+
+    debugPrint("🍏 APNS Token: $apns");
+    debugPrint("🔥 FCM Token Final: ${await FirebaseMessaging.instance.getToken()}");
   }
 }
